@@ -120,66 +120,44 @@ void OutputCS(const CS& station)
         cout << "Add compressor station!" << endl;
     }
 }
-/*void SavePipe(const Pipe& p)
+void SavePipe(const Pipe& p)
 {
-    if (p.name != "")
+    ofstream fout;
+    fout.open("Information.txt", ios::out);
+    if (fout.is_open())
     {
-        ofstream fout;
-        fout.open("Information.txt", ios::app);
-        if (fout.is_open())
-        {
-            fout << "Information about pipe:" << endl
-                << p.name << endl
-                << p.length << endl
-                << p.diametr << endl
-                << p.repair << endl;
-            fout.close();
-        }
+        fout << "Information about pipe:" << endl
+            << p.name << endl
+            << p.length << endl
+            << p.diametr << endl
+            << p.repair << endl;
+        fout.close();
     }
 }
 void SaveCS(const CS& station)
 {
-    if (station.name != "")
+    ofstream fout;
+    fout.open("Information.txt", ios::app);
+    if (fout.is_open())
     {
-        ofstream fout;
-        fout.open("Information.txt", ios::app);
-        if (fout.is_open())
-        {
-            fout << "Information about CS:" << endl
-                << station.name << endl
-                << station.workshops << endl
-                << station.working << endl
-                << station.performance << endl;
-            fout.close();
-        }
+        fout << "Information about CS:" << endl
+            << station.name << endl
+            << station.workshops << endl
+            << station.working << endl
+            << station.performance << endl;
+        fout.close();
     }
-}*/
-void Save(const Pipe& p, const CS& station)
+}
+void SaveInf(const Pipe& p, const CS& station)
 {
-    if (p.name != "" || station.name != "")
+    if ((p.name == "") && (station.name == ""))
+        cout << "Add information" << endl;
+    else
     {
-        ofstream fout;
-        fout.open("Information.txt", ios::out);
-        if (fout.is_open())
-        {
-            if (p.name != "")
-            {
-                fout << "Information about pipe:" << endl
-                    << p.name << endl
-                    << p.length << endl
-                    << p.diametr << endl
-                    << p.repair << endl;
-            }
-            if (station.name != "")
-            {
-                fout << "Information about CS:" << endl
-                    << station.name << endl
-                    << station.workshops << endl
-                    << station.working << endl
-                    << station.performance << endl;
-            }
-            fout.close();
-        }
+        if (p.name != "")
+            SavePipe(p);
+        if (station.name != "")
+            SaveCS(station);
     }
 }
 Pipe LoadPipe()
@@ -296,7 +274,7 @@ int main()
         }
         case 6:
         {
-            Save(p, station);
+            SaveInf(p, station);
             break;
         }
         case 7:
