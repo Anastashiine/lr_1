@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 using namespace std;
+
 void PrintMenu()
 {
     cout << "1. Add pipe" << endl
@@ -27,7 +28,7 @@ struct CS
     int working;
     double performance;
 };
-int getrepair()
+bool getrepair()
 {
     bool rep;
     while (!(cin >> rep))
@@ -44,10 +45,11 @@ string GetLine()
     getline(cin >> ws, fname);
     return fname;
 }
-int check()
+template <typename T>
+T check_cond(T max)
 {
-    int x;
-    while ((cin >> x).fail() || x <= 0)
+    T x;
+    while ((cin >> x).fail() || x < 0 || x = 0 || x > max)
     {
         cin.clear();
         cin.ignore(10000, '\n');
@@ -55,70 +57,59 @@ int check()
     }
     return x;
 }
-int checkcond(int max)
+istream& operator >> (istream& in, Pipe& p)
 {
-    int x;
-    while ((cin >> x).fail() || x < 0 || x > max)
-    {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Please, try again: ";
-    }
-    return x;
-}
-Pipe AddPipe()
-{
-    Pipe p;
     cout << "Please, enter the name of the pipe: ";
     p.name = GetLine();
     cout << "Please, enter pipe length: ";
-    p.length = check();
+    p.length = check_cond(10000);
     cout << "Please, enter pipe diameter: ";
-    p.diametr = check();
+    p.diametr = check_cond(2000);
     cout << "Please, enter '1', if the pipe is under repair, otherwise enter '0': ";
     p.repair = getrepair();
-    return p;
+    return in;
 }
-CS AddCS()
-{
-    CS station;
-    cout << "Please, enter the name of the compressor station: ";
-    station.name = GetLine();
-    cout << "Please, enter the number of workshops: ";
-    station.workshops = check();
-    cout << "Please, enter the number of workshops in working: ";
-    station.working = checkcond(station.workshops);
-    cout << "Please, enter performance indicator (0 - 100): ";
-    station.performance = checkcond(100);
-    return station;
-}
-void OutputPipe(const Pipe& p)
+ostream& operator << (ostream& out, const Pipe& p)
 {
     if (p.name != "")
     {
-        cout << "Name: " << p.name << endl
+        out << "Name: " << p.name << endl
             << "Length: " << p.length << endl
             << "Diametr: " << p.diametr << endl
             << "Repair: " << p.repair << endl;
     }
     else
     {
-        cout << "Add pipe!" << endl;
+        out << "Add pipe!" << endl;
     }
+    return out;
 }
-void OutputCS(const CS& station)
+istream& operator >> (istream& in, CS& station)
+{
+    cout << "Please, enter the name of the compressor station: ";
+    station.name = GetLine();
+    cout << "Please, enter the number of workshops: ";
+    station.workshops = check_cond(1000);
+    cout << "Please, enter the number of workshops in working: ";
+    station.working = check_cond(station.workshops);
+    cout << "Please, enter performance indicator (0 - 100): ";
+    station.performance = check_cond(100);
+    return in;
+}
+ostream& operator << (ostream& out, const CS& station)
 {
     if (station.name != "")
     {
-        cout << "Name: " << station.name << endl
+        out << "Name: " << station.name << endl
             << "Number of workshops: " << station.workshops << endl
             << "Workshops in working: " << station.working << endl
             << "Performance indicator: " << station.performance << endl;
     }
     else
     {
-        cout << "Add compressor station!" << endl;
+        out << "Add compressor station!" << endl;
     }
+    return out;
 }
 void SavePipe(const Pipe& p)
 {
@@ -217,7 +208,7 @@ void EditCS(CS& station)
     if (station.name != "")
     {
         cout << "Please, enter the number of working workshops: ";
-        station.working = checkcond(station.workshops);
+        station.working = check_cond(station.workshops);
     }
 }
 int checkmenu()
@@ -242,34 +233,34 @@ int main()
         {
         case 1:
         {
-            p = AddPipe();
-            OutputPipe(p);
+            cin >> p;
+            cout << p;
             break;
         }
         case 2:
         {
-            station = AddCS();
-            OutputCS(station);
+            cin >> station;;
+            cout << station;
             break;
         }
         case 3:
         {
             cout << "Pipe information: " << endl;
-            OutputPipe(p);
+            cout << p;
             cout << "Compressor station information: " << endl;
-            OutputCS(station);
+            cout << station;
             break;
         }
         case 4:
         {
             EditPipe(p);
-            OutputPipe(p);
+            cout << p;
             break;
         }
         case 5:
         {
             EditCS(station);
-            OutputCS(station);
+            cout << station;
             break;
         }
         case 6:
@@ -281,8 +272,8 @@ int main()
         {
             p = LoadPipe();
             station = LoadCS();
-            OutputPipe(p);
-            OutputCS(station);
+            cout << p;
+            cout << station;
             break;
         }
         case 0:
