@@ -14,6 +14,13 @@ void PrintMenu()
         << "5. Edit compressor station" << endl
         << "6. Save to file" << endl
         << "7. Load from file" << endl
+        << "8. Find a pipe by name" << endl
+        << "9. Find a pipe in repair " << endl
+        << "10. Delete a pipe" << endl
+        << "11. Pack editing of pipes" << endl
+        << "12. Find a compressor station by name" << endl
+        << "13. Find a compressor station by percent of not working workshops" << endl
+        << "14. Delete a compressor station" << endl
         << "0. Exit" << endl;
 }
 struct Pipe
