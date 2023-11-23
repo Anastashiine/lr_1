@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <unordered_map>
+#include "CPipe.h"
 using namespace std;
 
 void PrintMenu()
@@ -28,6 +30,18 @@ struct CS
     int working;
     double performance;
 };
+
+int checkmenu()
+{
+    int i;
+    while (!(cin >> i))
+    {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Wrong action! Please, try again." << endl;
+    }
+    return i;
+}
 bool getrepair()
 {
     bool rep;
@@ -35,7 +49,7 @@ bool getrepair()
     {
         cin.clear();
         cin.ignore(10000, '\n');
-        cout << "Wrong action! Please, try again." << '\n';
+        cout << "Wrong action! Please, try again." << endl;
     }
     return rep;
 }
@@ -49,7 +63,7 @@ template <typename T>
 T check_cond(T max)
 {
     T x;
-    while ((cin >> x).fail() || x < 0 || x = 0 || x > max)
+    while ((cin >> x).fail() || x <= 0 || x > max)
     {
         cin.clear();
         cin.ignore(10000, '\n');
@@ -200,7 +214,7 @@ void EditPipe(Pipe& p)
     if (p.name != "")
     {
         cout << "Please, enter '1', if the pipe is under repair, otherwise enter '0': " << endl;
-        p.repair = getrepair();
+        p.repair=getrepair();
     }
 }
 void EditCS(CS& station)
@@ -211,19 +225,11 @@ void EditCS(CS& station)
         station.working = check_cond(station.workshops);
     }
 }
-int checkmenu()
-{
-    int i;
-    while (!(cin >> i))
-    {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Wrong action! Please, try again." << endl;
-    }
-    return i;
-}
+
 int main()
 {
+    unordered_map <int, Pipe> MapPipe;
+    unordered_map <int, CS> MapCS;
     CS station;
     Pipe p;
     while (1)
@@ -239,7 +245,7 @@ int main()
         }
         case 2:
         {
-            cin >> station;;
+            cin >> station;
             cout << station;
             break;
         }
