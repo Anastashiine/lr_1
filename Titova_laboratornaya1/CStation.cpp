@@ -2,6 +2,14 @@
 #include "utils.h"
 using namespace std;
 int CStation::MaxID = 0;
+CStation::CStation()
+{
+    id = ++MaxID;
+    name = "Unknown";
+    workshops = 1;
+    working = 0;
+    performance = 0;
+}
 istream& operator >> (istream& in, CStation& station)
 {
     cout << "Please, enter the name of the compressor station: ";

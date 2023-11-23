@@ -8,7 +8,7 @@ class CPipe
 public:
     static int MaxID;
     std::string name;
-    int length;
+    double length;
     int diametr;
     bool repair;
 

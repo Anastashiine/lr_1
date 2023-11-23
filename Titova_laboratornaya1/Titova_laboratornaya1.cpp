@@ -5,6 +5,7 @@
 #include "CPipe.h"
 #include "CStation.h"
 #include "utils.h"
+#include <unordered_set>
 using namespace std;
 
 void PrintMenu()
@@ -16,29 +17,15 @@ void PrintMenu()
         << "5. Edit compressor station" << endl
         << "6. Save to file" << endl
         << "7. Load from file" << endl
-        << "8. Find a pipe by name" << endl
+        << "8. Find pipes by name" << endl
         << "9. Find a pipe in repair " << endl
         << "10. Delete a pipe" << endl
         << "11. Pack editing of pipes" << endl
-        << "12. Find a compressor station by name" << endl
+        << "12. Find compressor stations by name" << endl
         << "13. Find a compressor station by percent of not working workshops" << endl
         << "14. Delete a compressor station" << endl
         << "0. Exit" << endl;
 }
-struct Pipe
-{
-    string name;
-    double length;
-    double diametr;
-    bool repair;
-};
-struct CS
-{
-    string name;
-    int workshops;
-    int working;
-    double performance;
-};
 
 int checkmenu()
 {
@@ -169,13 +156,59 @@ void EditCS(CS& station)
         station.working = check_cond(station.workshops);
     }
 }
-
+template <typename type>
+using PipeFilter = bool(*)(const CPipe& p, type param);
+bool CheckByName(const CPipe& pipe, string param) {
+    return (p.name.find(param) != string::npos);
+}
+bool CheckByRepair(const CPipe& pipe, bool param) {
+    return (p.repair == param);
+}
+template <typename type>
+unordered_set<int> FindPipesByFilter(const unordered_map<int, CPipe>& pipes, PipeFilter<type> f, type param) 
+{
+    unordered_set<int> res;
+    for (auto& [id, p]: pipes) 
+    {
+        if (f(p, param)) 
+        {
+            res.insert(id);
+        }
+    }
+    if (!(size(res))) 
+    {
+        cout << "Pipe not found" << endl;
+    }
+    return res;
+}
+template <typename type>
+using CSFilter = bool(*)(const CStation& station, type param);
+bool CheckByName(const CStation& station, string param) {
+    return (station.name.find(param) != string::npos);
+}
+bool CheckByUnworkingWorkshops(const CStation& station, double param) {
+    return (double((station.workshops - station.working) * 100) / station.workshops) >= param;
+}
+template <typename type>
+unordered_set<int> FindCSByFilter(const unordered_map<int, CStation>& stations, CSFilter<type> f, type param) {
+    unordered_set<int> res;
+    for (auto& [id, station] : stations) 
+    {
+        if (f(station, param)) 
+        {
+            res.insert(id);
+        }
+    }
+    if (!(size(res))) 
+    {
+        cout << "Stations not found" << endl;
+    }
+    return res;
+}
 int main()
 {
     unordered_map <int, Pipe> MapPipe;
     unordered_map <int, CS> MapCS;
-    CS station;
-    Pipe p;
     while (1)
     {
         PrintMenu();

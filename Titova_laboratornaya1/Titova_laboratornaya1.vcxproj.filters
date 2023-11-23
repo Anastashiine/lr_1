@@ -18,5 +18,22 @@
     <ClCompile Include="Titova_laboratornaya1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CPipe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CStation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CPipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CStation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

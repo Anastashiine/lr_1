@@ -3,6 +3,14 @@
 using namespace std;
 
 int CPipe::MaxID = 0;
+CPipe::CPipe()
+{
+    id = ++MaxID;
+    name = "Unknown";
+    length = 0.1;
+    diametr = 50;
+    repair = false;
+}
 istream& operator >> (istream& in, CPipe& p)
 {
     cout << "Please, enter the name of the pipe: ";
