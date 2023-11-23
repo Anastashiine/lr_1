@@ -1,11 +1,17 @@
 #pragma once
-using namespace std;
+#include <iostream>
+#include <string>
+#include <fstream>
 class CPipe
 {
+    int id;
 public:
-    string name;
+    static int MaxID;
+    std::string name;
     int length;
     int diametr;
     bool repair;
-};
 
+friend std::ostream& operator << (std::ostream& out, const CPipe& p);
+friend std::istream& operator >> (std::istream& in, CPipe& p);
+};

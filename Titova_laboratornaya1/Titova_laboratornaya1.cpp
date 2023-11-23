@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include "CPipe.h"
+#include "CStation.h"
+#include "utils.h"
 using namespace std;
 
 void PrintMenu()
@@ -66,72 +68,7 @@ string GetLine()
     getline(cin >> ws, fname);
     return fname;
 }
-template <typename T>
-T check_cond(T max)
-{
-    T x;
-    while ((cin >> x).fail() || x <= 0 || x > max)
-    {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Please, try again: ";
-    }
-    return x;
-}
-istream& operator >> (istream& in, Pipe& p)
-{
-    cout << "Please, enter the name of the pipe: ";
-    p.name = GetLine();
-    cout << "Please, enter pipe length: ";
-    p.length = check_cond(10000);
-    cout << "Please, enter pipe diameter: ";
-    p.diametr = check_cond(2000);
-    cout << "Please, enter '1', if the pipe is under repair, otherwise enter '0': ";
-    p.repair = getrepair();
-    return in;
-}
-ostream& operator << (ostream& out, const Pipe& p)
-{
-    if (p.name != "")
-    {
-        out << "Name: " << p.name << endl
-            << "Length: " << p.length << endl
-            << "Diametr: " << p.diametr << endl
-            << "Repair: " << p.repair << endl;
-    }
-    else
-    {
-        out << "Add pipe!" << endl;
-    }
-    return out;
-}
-istream& operator >> (istream& in, CS& station)
-{
-    cout << "Please, enter the name of the compressor station: ";
-    station.name = GetLine();
-    cout << "Please, enter the number of workshops: ";
-    station.workshops = check_cond(1000);
-    cout << "Please, enter the number of workshops in working: ";
-    station.working = check_cond(station.workshops);
-    cout << "Please, enter performance indicator (0 - 100): ";
-    station.performance = check_cond(100);
-    return in;
-}
-ostream& operator << (ostream& out, const CS& station)
-{
-    if (station.name != "")
-    {
-        out << "Name: " << station.name << endl
-            << "Number of workshops: " << station.workshops << endl
-            << "Workshops in working: " << station.working << endl
-            << "Performance indicator: " << station.performance << endl;
-    }
-    else
-    {
-        out << "Add compressor station!" << endl;
-    }
-    return out;
-}
+
 void SavePipe(const Pipe& p)
 {
     ofstream fout;
