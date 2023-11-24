@@ -38,16 +38,10 @@ int checkmenu()
     }
     return i;
 }
-bool getrepair()
+template <typename type>
+bool CheckID(const unordered_map<int, type>& x, const int& id) 
 {
-    bool rep;
-    while (!(cin >> rep))
-    {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Wrong action! Please, try again." << endl;
-    }
-    return rep;
+    return (x.contains(id));
 }
 string GetLine()
 {
@@ -140,35 +134,65 @@ CS LoadCS()
     }
     return station;
 }
-void EditPipe(Pipe& p)
+void EditPipe(unordered_map<int, CPipe>& MapPipe, const int& id)
 {
-    if (p.name != "")
+    MapPipe[id].repair = !(MapPipe[id].repair);
+}
+void EditCS(unordered_map<int, CStation>& MapCS)
+{
+    cout << "Please, enter a station's ID for editing: ";
+    int id;
+    id = check_cond(MapCS.size());
+    if (CheckID(MapCS, id))
     {
-        cout << "Please, enter '1', if the pipe is under repair, otherwise enter '0': " << endl;
-        p.repair=getrepair();
+        string solution;
+        cout << "Please, enter "start" if you want to add a working workshop and "stop" if you want to stop a working workshop: ";
+        cin >> solution;
+        if (solution == "start" && check_cond(MapCS[id].workshops))
+        {
+            MapCS[id].working++;
+        }
+        if (solution == "stop" && check_cond(MapCS[id].working))
+        {
+            MapCS[id].working--;
+        }
+        else
+        {
+            cout << "Station with such ID was not found";
+        }
     }
 }
-void EditCS(CS& station)
+void DeletePipe(unordered_map<int, CPipe>& MapPipe, const int& id)
 {
-    if (station.name != "")
+    MapPipe.erase(id);
+}
+void DeleteCS(unordered_map<int, CStation>& MapCS)
+{
+    cout << "Please, enter a station's ID for deleting: ";
+    int id;
+    id = check_cond(MapCS.size());
+    if (CheckID(MapCS, id))
     {
-        cout << "Please, enter the number of working workshops: ";
-        station.working = check_cond(station.workshops);
+        MapCS.erase(id);
+    }
+    else
+    {
+        cout << "Station with such ID was not found";
     }
 }
 template <typename type>
-using PipeFilter = bool(*)(const CPipe& p, type param);
-bool CheckByName(const CPipe& pipe, string param) {
-    return (p.name.find(param) != string::npos);
+using PipeFilter = bool(*)(const CPipe& MapPipe, type param);
+bool CheckByName(const CPipe& MapPipe, string param) {
+    return (MapPipe.name.find(param) != string::npos);
 }
-bool CheckByRepair(const CPipe& pipe, bool param) {
-    return (p.repair == param);
+bool CheckByRepair(const CPipe& MapPipe, bool param) {
+    return (MapPipe.repair == param);
 }
 template <typename type>
-unordered_set<int> FindPipesByFilter(const unordered_map<int, CPipe>& pipes, PipeFilter<type> f, type param) 
+unordered_set<int> FindPipesByFilter(const unordered_map<int, CPipe>& MapPipe, PipeFilter<type> f, type param) 
 {
     unordered_set<int> res;
-    for (auto& [id, p]: pipes) 
+    for (auto& [id, p]: MapPipe) 
     {
         if (f(p, param)) 
         {
@@ -182,17 +206,20 @@ unordered_set<int> FindPipesByFilter(const unordered_map<int, CPipe>& pipes, Pip
     return res;
 }
 template <typename type>
-using CSFilter = bool(*)(const CStation& station, type param);
-bool CheckByName(const CStation& station, string param) {
-    return (station.name.find(param) != string::npos);
+using CSFilter = bool(*)(const CStation& MapCS, type param);
+bool CheckByName(const CStation& MapCS, string param)
+{
+    return (MapCS.name.find(param) != string::npos);
 }
-bool CheckByUnworkingWorkshops(const CStation& station, double param) {
-    return (double((station.workshops - station.working) * 100) / station.workshops) >= param;
+bool CheckByUnworkingWorkshops(const CStation& MapCS, double param) 
+{
+    return (double((MapCS.workshops - MapCS.working) * 100) / MapCS.workshops) >= param;
 }
 template <typename type>
-unordered_set<int> FindCSByFilter(const unordered_map<int, CStation>& stations, CSFilter<type> f, type param) {
+unordered_set<int> FindCSByFilter(const unordered_map<int, CStation>& MapCS, CSFilter<type> f, type param)
+{
     unordered_set<int> res;
-    for (auto& [id, station] : stations) 
+    for (auto& [id, station] : MapCS) 
     {
         if (f(station, param)) 
         {
@@ -207,8 +234,8 @@ unordered_set<int> FindCSByFilter(const unordered_map<int, CStation>& stations, 
 }
 int main()
 {
-    unordered_map <int, Pipe> MapPipe;
-    unordered_map <int, CS> MapCS;
+    unordered_map <int, CPipe> MapPipe;
+    unordered_map <int, CStation> MapCS;
     while (1)
     {
         PrintMenu();
