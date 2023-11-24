@@ -11,10 +11,14 @@ CPipe::CPipe()
     diametr = 50;
     repair = false;
 }
+int CPipe::GetPipeID() const
+{
+    return id;
+}
 istream& operator >> (istream& in, CPipe& p)
 {
     cout << "Please, enter the name of the pipe: ";
-    p.name = GetLine();
+    GetLine(in, p.name);
     cout << "Please, enter pipe length: ";
     p.length = check_cond(10000);
     cout << "Please, enter pipe diameter: ";
@@ -38,4 +42,23 @@ ostream& operator << (ostream& out, const CPipe& p)
         out << "Add pipe!" << endl;
     }
     return out;
+}
+std::ifstream& operator>>(std::ifstream& fin, CPipe& p)
+{
+    fin >> p.id;
+    LoadLine(fin, p.name);
+    fin >> p.length;
+    fin >> p.diametr;
+    fin >> p.repair;
+    return fin;
+}
+
+std::ofstream& operator<<(std::ofstream& fout, const CPipe& p)
+{
+    fout << p.id << endl
+        << p.name << endl
+        << p.length << endl
+        << p.diametr << endl
+        << p.repair << endl;
+    return fout;
 }

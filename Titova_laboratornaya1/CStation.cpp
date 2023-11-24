@@ -10,10 +10,14 @@ CStation::CStation()
     working = 0;
     performance = 0;
 }
+int CStation::GetCSID() const
+{
+    return id;
+}
 istream& operator >> (istream& in, CStation& station)
 {
     cout << "Please, enter the name of the compressor station: ";
-    station.name = GetLine();
+    GetLine(in, station.name);
     cout << "Please, enter the number of workshops: ";
     station.workshops = check_cond(1000);
     cout << "Please, enter the number of workshops in working: ";
@@ -37,4 +41,23 @@ ostream& operator << (ostream& out, const CStation& station)
         out << "Add compressor station!" << endl;
     }
     return out;
+}
+std::ifstream& operator >> (std::ifstream& fin, CStation& station)
+{
+    fin >> station.id;
+    LoadLine(fin, station.name);
+    fin >> station.workshops;
+    fin >> station.working;
+    fin >> station.performance;
+    return fin;
+}
+
+std::ofstream& operator << (std::ofstream& fout, const CStation& station)
+{
+    fout << station.id << endl
+        << station.name << endl
+        << station.workshops << endl
+        << station.working << endl
+        << station.performance << endl;
+    return fout;
 }

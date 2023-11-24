@@ -38,47 +38,34 @@ int checkmenu()
     }
     return i;
 }
+
 template <typename type>
 bool CheckID(const unordered_map<int, type>& x, const int& id) 
 {
     return (x.contains(id));
 }
-string GetLine()
+string FName() 
 {
     string fname;
-    getline(cin >> ws, fname);
+    cout << "Enter a file name: ";
+    GetLine(cin, fname);
     return fname;
 }
-
-void SavePipe(const Pipe& p)
+void SavePipe(ofstream& fout, const CPipe& p)
 {
-    ofstream fout;
-    fout.open("Information.txt", ios::out);
-    if (fout.is_open())
+    if (p.name != "")
     {
-        fout << "Information about pipe:" << endl
-            << p.name << endl
-            << p.length << endl
-            << p.diametr << endl
-            << p.repair << endl;
-        fout.close();
+        fout << p;
     }
 }
-void SaveCS(const CS& station)
+void SaveCS(ofstream& fout, const CStation& station)
 {
-    ofstream fout;
-    fout.open("Information.txt", ios::app);
-    if (fout.is_open())
+    if (station.name != "")
     {
-        fout << "Information about CS:" << endl
-            << station.name << endl
-            << station.workshops << endl
-            << station.working << endl
-            << station.performance << endl;
-        fout.close();
+        fout << station;
     }
 }
-void SaveInf(const Pipe& p, const CS& station)
+/*void SaveInf(const Pipe& p, const CS& station)
 {
     if ((p.name == "") && (station.name == ""))
         cout << "Add information" << endl;
@@ -89,54 +76,32 @@ void SaveInf(const Pipe& p, const CS& station)
         if (station.name != "")
             SaveCS(station);
     }
-}
-Pipe LoadPipe()
+}*/
+CPipe LoadPipe(ifstream& fin)
 {
-    Pipe p;
-    ifstream fin;
-    fin.open("Information.txt", ios::in);
-    if (fin.is_open())
-    {
-        string st;
-        while (getline(fin >> ws, st))
-        {
-            if (st == "Information about pipe:")
-            {
-                getline(fin, p.name);
-                fin >> p.length;
-                fin >> p.diametr;
-                fin >> p.repair;
-            }
-        }
-        fin.close();
-    }
+    CPipe p;
+    fin >> p;
     return p;
 }
-CS LoadCS()
+CStation LoadCS(ifstream& fin)
 {
-    CS station;
-    ifstream fin;
-    fin.open("Information.txt", ios::in);
-    if (fin.is_open())
-    {
-        string st;
-        while (getline(fin >> ws, st))
-        {
-            if (st == "Information about CS:")
-            {
-                getline(fin, station.name);
-                fin >> station.workshops;
-                fin >> station.working;
-                fin >> station.performance;
-            }
-        }
-        fin.close();
-    }
+    CStation station;
+    fin >> station;
     return station;
 }
-void EditPipe(unordered_map<int, CPipe>& MapPipe, const int& id)
+void EditPipe(unordered_map<int, CPipe>& MapPipe)
 {
-    MapPipe[id].repair = !(MapPipe[id].repair);
+    cout << "Enter ID of the pipes for editing: " << endl;
+    int id;
+    id = check_cond(MapPipe.size());
+    if (CheckID(MapPipe, id))
+    {
+        MapPipe[id].repair = !(MapPipe[id].repair);
+    }
+    else
+    {
+        cout << "Pipe with such ID was not found";
+    }
 }
 void EditCS(unordered_map<int, CStation>& MapCS)
 {
@@ -162,9 +127,19 @@ void EditCS(unordered_map<int, CStation>& MapCS)
         }
     }
 }
-void DeletePipe(unordered_map<int, CPipe>& MapPipe, const int& id)
+void DeletePipe(unordered_map<int, CPipe>& MapPipe)
 {
-    MapPipe.erase(id);
+    cout << "Please, enter a pipe's ID for deleting: ";
+    int id;
+    id = check_cond(MapPipe.size());
+    if (CheckID(MapPipe, id))
+    {
+        MapPipe.erase(id);
+    }
+    else
+    {
+        cout << "Pipe with such ID was not found";
+    }
 }
 void DeleteCS(unordered_map<int, CStation>& MapCS)
 {
@@ -182,10 +157,12 @@ void DeleteCS(unordered_map<int, CStation>& MapCS)
 }
 template <typename type>
 using PipeFilter = bool(*)(const CPipe& MapPipe, type param);
-bool CheckByName(const CPipe& MapPipe, string param) {
+bool CheckByName(const CPipe& MapPipe, string param) 
+{
     return (MapPipe.name.find(param) != string::npos);
 }
-bool CheckByRepair(const CPipe& MapPipe, bool param) {
+bool CheckByRepair(const CPipe& MapPipe, bool param) 
+{
     return (MapPipe.repair == param);
 }
 template <typename type>
@@ -213,7 +190,8 @@ bool CheckByName(const CStation& MapCS, string param)
 }
 bool CheckByUnworkingWorkshops(const CStation& MapCS, double param) 
 {
-    return (double((MapCS.workshops - MapCS.working) * 100) / MapCS.workshops) >= param;
+    param = ((MapCS.workshops - MapCS.working) * 100) / MapCS.workshops;
+    return param;
 }
 template <typename type>
 unordered_set<int> FindCSByFilter(const unordered_map<int, CStation>& MapCS, CSFilter<type> f, type param)
@@ -228,7 +206,7 @@ unordered_set<int> FindCSByFilter(const unordered_map<int, CStation>& MapCS, CSF
     }
     if (!(size(res))) 
     {
-        cout << "Stations not found" << endl;
+        cout << "Station not found" << endl;
     }
     return res;
 }
@@ -243,47 +221,147 @@ int main()
         {
         case 1:
         {
+            CPipe p;
             cin >> p;
             cout << p;
             break;
         }
         case 2:
         {
+            CStation station;
             cin >> station;
             cout << station;
             break;
         }
         case 3:
         {
-            cout << "Pipe information: " << endl;
-            cout << p;
-            cout << "Compressor station information: " << endl;
-            cout << station;
+            cout << "Pipes information: " << endl;
+            for (auto& [id, p] : MapPipe)
+            {
+                cout << p << endl;
+            }
+            cout << "Compressor stations information: " << endl;
+            for (auto& [id, station] : MapCS)
+            {
+                cout << station << endl;
+            }
             break;
         }
         case 4:
         {
-            EditPipe(p);
-            cout << p;
+            EditPipe(MapPipe);
             break;
         }
         case 5:
         {
-            EditCS(station);
-            cout << station;
+            EditCS(MapCS);
             break;
         }
         case 6:
         {
-            SaveInf(p, station);
+            ofstream fout;
+            string  fname;
+            cout << "Enter a file name: ";
+            GetLine(cin, fname);
+            fout.open(fname, ios::out);
+            if (fout.is_open()) 
+            {
+                fout << MapPipe.size() << endl;
+                for (auto& [id, p] : MapPipe) 
+                {
+                    SavePipe(fout, p);
+                }
+                fout << MapCS.size() << endl;
+                for (auto& [id, station] : MapCS) 
+                {
+                    SaveCS(fout, station);
+                }
+                fout.close();
+            }
             break;
         }
         case 7:
         {
-            p = LoadPipe();
-            station = LoadCS();
-            cout << p;
-            cout << station;
+            ifstream fin;
+            fin.open(FName(), ios::in);
+            if (fin.is_open()) 
+            {
+                int count_p;
+                fin >> count_p;
+                while (count_p--) 
+                {
+                    CPipe p = LoadPipe(fin);
+                    MapPipe.insert(pair{p.GetPipeID(), p});
+                    p.MaxID = p.GetPipeID();
+
+                }
+                int count_s;
+                fin >> count_s;
+                while (count_s--) 
+                {
+                    CStation station = LoadCS(fin);
+                    MapCS.insert(pair{station.GetCSID(), station});
+                    station.MaxID = station.GetCSID();
+                }
+                fin.close();
+            }
+            break;
+        }
+        case 8:
+        {
+            string name;
+            cout << "Input name of the pipe: ";
+            GetLine(cin, name);
+            for (int id: FindPipesByFilter(MapPipe, CheckByName, name)) 
+            {
+                cout << "ID: " << id;
+                cout << MapPipe[id];
+            }
+            break;
+        }
+        case 9:
+        {
+            cout << "Input pipe in repair or not: ";
+            bool flag = check_cond(false, true);
+            for (int id: FindPipesByFilter(MapPipe, CheckByRepair, flag)) 
+            {
+                cout << MapPipe[id];
+            }
+            break;
+        }
+        case 10:
+        {
+            DeletePipe(MapPipe);
+            break;
+        }
+        case 11:
+        {
+            break;
+        }
+        case 12:
+        {
+            string name;
+            cout << "Input name of the station: ";
+            GetLine(cin, name);
+            for (int id: FindCSByFilter(MapCS, CheckByName, name))
+            {
+                cout << MapCS[id];
+            }
+            break;
+        }
+        case 13:
+        {
+            cout << "Input percent of unworking stations: ";
+            double per = check_cond(100.0);
+            for (int id: FindCSByFilter(MapCS, CheckByUnworkingWorkshops, per))
+            {
+                cout << MapCS[id];
+            }
+            break;
+        }
+        case 14:
+        {
+            DeleteCS(MapCS);
             break;
         }
         case 0:

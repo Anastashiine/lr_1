@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#define GetLine(in, st) getline(in>>std::ws, st); cout << st << endl;
+#define LoadLine(in, st) getline(in>>std::ws, st); 
 template <typename T>
 T check_cond(T max)
 {

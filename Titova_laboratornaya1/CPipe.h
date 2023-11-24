@@ -11,7 +11,10 @@ public:
     double length;
     int diametr;
     bool repair;
-
+    CPipe();
+    int GetPipeID() const;
 friend std::ostream& operator << (std::ostream& out, const CPipe& p);
 friend std::istream& operator >> (std::istream& in, CPipe& p);
+friend std::ifstream& operator >> (std::ifstream& fin, CPipe& p);
+friend std::ofstream& operator << (std::ofstream& fout, const CPipe&p);
 };
