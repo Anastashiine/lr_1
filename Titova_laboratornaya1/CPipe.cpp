@@ -24,7 +24,7 @@ istream& operator >> (istream& in, CPipe& p)
     cout << "Please, enter pipe diameter: ";
     p.diametr = check_cond(2000);
     cout << "Please, enter '1', if the pipe is under repair, otherwise enter '0': ";
-    p.repair = getrepair();
+    p.repair = check_bool(0, 1);
     return in;
 }
 ostream& operator << (ostream& out, const CPipe& p)

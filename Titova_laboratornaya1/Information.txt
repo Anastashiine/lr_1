@@ -1,0 +1,10 @@
+Information about pipe:
+78
+54
+2
+1
+Information about CS:
+78
+5
+3
+3
