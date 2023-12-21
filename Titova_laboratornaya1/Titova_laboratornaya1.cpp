@@ -24,6 +24,10 @@ void PrintMenu()
         << "12. Find compressor stations by name" << endl
         << "13. Find a compressor station by percent of not working workshops" << endl
         << "14. Delete a compressor station" << endl
+        << "15. Connect pipes" << endl
+        << "16. Disconnect pipes" << endl
+        << "17. Sort the network" << endl
+        << "18. View the network" << endl
         << "0. Exit" << endl;
 }
 
@@ -79,7 +83,14 @@ CStation LoadCS(ifstream& fin)
 }
 void EditPipe(unordered_map<int, CPipe>& MapPipe, const int& id)
 {
-    MapPipe[id].repair = !(MapPipe[id].repair);
+    if (MapPipe[id].CS_entrance == -1)
+    {
+        MapPipe[id].repair = !(MapPipe[id].repair);
+    }
+    else
+    {
+        cout << "This pipe is in the network, you can't use it" << endl;
+    }
 }
 void EditCS(unordered_map<int, CStation>& MapCS)
 {
@@ -88,26 +99,41 @@ void EditCS(unordered_map<int, CStation>& MapCS)
     id = check_cond(MapCS.size());
     if (CheckID(MapCS, id))
     {
-        string solution;
-        cout << "Please, enter 'start' if you want to add a working workshop and 'stop' if you want to stop a working workshop: ";
-        cin >> solution;
-        if (solution == "start" && check_cond(MapCS[id].workshops))
+        if (MapCS[id].start == 0 && MapCS[id].stop == 0)
         {
-            MapCS[id].working++;
-        }
-        if (solution == "stop" && check_cond(MapCS[id].working))
-        {
-            MapCS[id].working--;
+            string solution;
+            cout << "Please, enter 'start' if you want to add a working workshop and 'stop' if you want to stop a working workshop: ";
+            cin >> solution;
+            if (solution == "start" && check_cond(MapCS[id].workshops))
+            {
+                MapCS[id].working++;
+            }
+            if (solution == "stop" && check_cond(MapCS[id].working))
+            {
+                MapCS[id].working--;
+            }
+            cerr << solution << endl;
         }
         else
         {
-            cout << "Station with such ID was not found";
+            cout << "This CS is in the network, you can't use it";
         }
+    }
+    else
+    {
+        cout << "Pipe with such ID was not found" << endl;
     }
 }
 void DeletePipe(unordered_map<int, CPipe>& MapPipe, const int& id)
 {
-    MapPipe.erase(id);
+    if (MapPipe[id].CS_entrance == -1)
+    {
+        MapPipe.erase(id);
+    }
+    else
+    {
+        cout << "This pipe is in the network, you can't use it" << endl;
+    }
 }
 void DeleteCS(unordered_map<int, CStation>& MapCS)
 {
@@ -116,7 +142,14 @@ void DeleteCS(unordered_map<int, CStation>& MapCS)
     id = check_cond(MapCS.size());
     if (CheckID(MapCS, id))
     {
-        MapCS.erase(id);
+        if (MapCS[id].start == 0 && MapCS[id].stop == 0)
+        {
+            MapCS.erase(id);
+        }
+        else
+        {
+            cout << "This CS is in the network, you can't use it";
+        }
     }
     else
     {
@@ -227,7 +260,7 @@ void EditMenu()
         << "2. Edit all found pipes" << endl
         << "3. Delete all found pipes" << endl
         << "4. Show all pipes" << endl
-        << "0. Return to main menu" << endl << endl;
+        << "0. Return to main menu" << endl;
 }
 
 unordered_map<int, CPipe>& ClearP(unordered_map<int, CPipe>& MapPipe)
@@ -240,6 +273,53 @@ unordered_map<int, CStation>& ClearCS(unordered_map<int, CStation>& CStation)
     CStation.clear();
     return CStation;
 }
+
+int Get_PipeID(unordered_map<int, CPipe>& MapPipe)
+{
+    int d;
+    int pID = 0;
+    cout << "Enter a diameter of the pipe: ";
+    d = check_diameter();
+    for (auto& [id, p]: MapPipe)
+    {
+        if (d == p.diametr && p.repair == false && p.CS_entrance == -1) 
+        {
+            pID = p.GetPipeID();
+            break;
+        }
+    }
+    if (!pID) 
+    {
+        cout << "Pipe not found. You can create a new one:" << endl;
+        CPipe p;
+        cout << "Please, enter the name of the pipe: ";
+        GetLine(cin, p.name);
+        cout << "Please, enter pipe length: ";
+        p.length = check_cond(1000);
+        p.diametr = d;
+        p.repair = false;
+        MapPipe.insert({ p.GetPipeID(), p});
+        pID = p.GetPipeID();
+    }
+    return pID;
+}
+
+int GetCSID_Entrance(unordered_map<int, CStation>& MapCS)
+{
+    int entrance;
+    cout << "Enter an CS ID of the entrance: ";
+    entrance = check_cond(MapCS.size());
+    return entrance;
+}
+
+int GetCSID_Exit(unordered_map<int, CStation>& MapCS)
+{
+    int exit;
+    cout << "Enter an CS ID of the exit: ";
+    exit = check_cond(MapCS.size());
+    return exit;
+}
+
 int main()
 {
     redirect_output_wrapper cerr_out(cerr);
@@ -485,6 +565,57 @@ int main()
         case 14:
         {
             DeleteCS(MapCS);
+            break;
+        }
+        case 15:
+        {
+            int pID = Get_PipeID(MapPipe);
+            int entrance = GetCSID_Entrance(MapCS);
+            int exit = GetCSID_Exit(MapCS);
+            if (CheckID(MapCS, entrance) && CheckID(MapCS, exit) && entrance != exit && MapCS[entrance].working < MapCS[entrance].workshops && MapCS[exit].working < MapCS[exit].workshops)
+            {
+                MapCS[entrance].working++;
+                MapCS[exit].working++;
+                MapCS[entrance].start++;
+                MapCS[exit].stop++;
+                MapPipe[pID].CS_entrance = entrance;
+                MapPipe[pID].CS_exit = exit;
+            }
+            break;
+        }
+        case 16:
+        {
+            cout << "Enter a pipeline's ID for diconnection: ";
+            int pID = check_cond(CPipe::MaxID, 0);
+            if (CheckID(MapPipe, pID) && MapPipe[pID].CS_entrance != -1)
+            {
+                MapCS[MapPipe[pID].CS_entrance].start--;
+                MapCS[MapPipe[pID].CS_exit].stop--;
+                MapPipe[pID].CS_entrance = -1;
+                MapPipe[pID].CS_exit = -1;
+            }
+            break;
+        }
+        case 17:
+        {
+            break;
+        }
+        case 18:
+        {
+            for (auto& [id, p]: MapPipe)
+            {
+                if (p.CS_entrance != -1)
+                {
+                    cout << p << endl;
+                }
+            }
+            for (auto& [id, station] : MapCS)
+            {
+                if (station.start > 0 || station.stop > 0)
+                {
+                    cout << station << endl;
+                }
+            }
             break;
         }
         case 0:

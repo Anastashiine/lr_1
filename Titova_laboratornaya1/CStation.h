@@ -13,6 +13,8 @@ public:
     double performance;
     CStation();
     int GetCSID() const;
+    int start;
+    int stop;
 
 friend std::ostream& operator << (std::ostream& out, const CStation& station);
 friend std::istream& operator >> (std::istream& in, CStation& station);

@@ -1,7 +1,7 @@
 #include "utils.h"
 #include <unordered_set>
 using namespace std;
-int check_daimeter()
+int check_diameter()
 {
 	int d;
 	unordered_set<int> diameter = { 500, 700, 1000, 1400 };

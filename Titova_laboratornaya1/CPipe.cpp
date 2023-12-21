@@ -8,8 +8,10 @@ CPipe::CPipe()
     id = ++MaxID;
     name = "Unknown";
     length = 0.1;
-    diametr = 50;
+    diametr = 500;
     repair = false;
+    CS_entrance = -1;
+    CS_exit = -1;
 }
 int CPipe::GetPipeID() const
 {
@@ -35,7 +37,9 @@ ostream& operator << (ostream& out, const CPipe& p)
             << "Name: " << p.name << endl
             << "Length: " << p.length << endl
             << "Diametr: " << p.diametr << endl
-            << "Repair: " << p.repair << endl;
+            << "Repair: " << p.repair << endl
+            << "Input CS ID: " << p.CS_entrance << endl
+            << "Output CS ID: " << p.CS_exit << endl;
     }
     else
     {
@@ -50,6 +54,8 @@ std::ifstream& operator>>(std::ifstream& fin, CPipe& p)
     fin >> p.length;
     fin >> p.diametr;
     fin >> p.repair;
+    fin >> p.CS_entrance;
+    fin >> p.CS_exit;
     return fin;
 }
 
@@ -59,6 +65,8 @@ std::ofstream& operator<<(std::ofstream& fout, const CPipe& p)
         << p.name << endl
         << p.length << endl
         << p.diametr << endl
-        << p.repair << endl;
+        << p.repair << endl
+        << p.CS_entrance << endl
+        << p.CS_exit << endl;
     return fout;
 }

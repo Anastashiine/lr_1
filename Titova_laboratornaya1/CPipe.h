@@ -13,6 +13,9 @@ public:
     bool repair;
     CPipe();
     int GetPipeID() const;
+    int CS_entrance;
+    int CS_exit;
+
 friend std::ostream& operator << (std::ostream& out, const CPipe& p);
 friend std::istream& operator >> (std::istream& in, CPipe& p);
 friend std::ifstream& operator >> (std::ifstream& fin, CPipe& p);

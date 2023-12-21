@@ -9,6 +9,8 @@ CStation::CStation()
     workshops = 1;
     working = 0;
     performance = 0;
+    start = 0;
+    stop = 0;
 }
 int CStation::GetCSID() const
 {
@@ -34,7 +36,9 @@ ostream& operator << (ostream& out, const CStation& station)
             << "Name: " << station.name << endl
             << "Number of workshops: " << station.workshops << endl
             << "Workshops in working: " << station.working << endl
-            << "Performance indicator: " << station.performance << endl;
+            << "Performance indicator: " << station.performance << endl
+            << "Start CS:" <<station.start << endl
+            << "End CS:" << station.stop << endl;
     }
     else
     {
@@ -49,6 +53,8 @@ std::ifstream& operator >> (std::ifstream& fin, CStation& station)
     fin >> station.workshops;
     fin >> station.working;
     fin >> station.performance;
+    fin >> station.start;
+    fin >> station.stop;
     return fin;
 }
 
@@ -58,6 +64,8 @@ std::ofstream& operator << (std::ofstream& fout, const CStation& station)
         << station.name << endl
         << station.workshops << endl
         << station.working << endl
-        << station.performance << endl;
+        << station.performance << endl
+        << station.start << endl
+        << station.stop << endl;
     return fout;
 }
