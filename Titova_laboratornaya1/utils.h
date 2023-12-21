@@ -47,3 +47,4 @@ public:
         stream.rdbuf(dest.rdbuf());
     }
 };
+int check_diameter();
