@@ -6,6 +6,7 @@
 #include "CStation.h"
 #include "utils.h"
 #include <unordered_set>
+#include <queue>
 using namespace std;
 
 void PrintMenu()
@@ -121,7 +122,7 @@ void EditCS(unordered_map<int, CStation>& MapCS)
     }
     else
     {
-        cout << "Pipe with such ID was not found" << endl;
+        cout << "Station with such ID was not found" << endl;
     }
 }
 void DeletePipe(unordered_map<int, CPipe>& MapPipe, const int& id)
@@ -307,7 +308,7 @@ int Get_PipeID(unordered_map<int, CPipe>& MapPipe)
 int GetCSID_Entrance(unordered_map<int, CStation>& MapCS)
 {
     int entrance;
-    cout << "Enter an CS ID of the entrance: ";
+    cout << "Enter a CS ID of the entrance: ";
     entrance = check_cond(MapCS.size());
     return entrance;
 }
@@ -315,9 +316,45 @@ int GetCSID_Entrance(unordered_map<int, CStation>& MapCS)
 int GetCSID_Exit(unordered_map<int, CStation>& MapCS)
 {
     int exit;
-    cout << "Enter an CS ID of the exit: ";
+    cout << "Enter a CS ID of the exit: ";
     exit = check_cond(MapCS.size());
     return exit;
+}
+vector<int> TopologicalSort(vector<vector<int>>& r, unordered_map<int, int>& stepen) 
+{
+    int vershiny = stepen.size();
+    vector<int> result;
+    queue<int> q;
+    for (auto& [id, st] : stepen) 
+    {
+        if (st == 0)
+        {
+            q.push(id);
+        }
+    }
+    while (!q.empty()) 
+    {
+        int vershina = q.front();
+        q.pop();
+        result.insert(result.begin(), vershina);
+        for (auto& pair : r)
+        {
+            if (pair[1] == vershina)
+            {
+                stepen[pair[0]]--;
+                if (stepen[pair[0]] == 0) 
+                {
+                    q.push(pair[0]);
+                }
+            }
+        }
+    }
+    if (result.size() != vershiny) 
+    {
+        cout << "Can't do topological sort. Network has a cycle" << endl;
+        result.resize(0);
+    }
+    return result;
 }
 
 int main()
@@ -598,6 +635,30 @@ int main()
         }
         case 17:
         {
+            vector <vector<int>> r;
+            for (auto& [id, p] : MapPipe) 
+            {
+                if (p.CS_entrance != -1) 
+                {
+                    r.push_back({ p.CS_entrance, p.CS_exit });
+                }
+            }
+            unordered_map<int, int> stepen;
+            for (auto& [id, station] : MapCS) 
+            {
+                if (station.start > 0 || station.stop > 0) 
+                {
+                    stepen.insert({id, station.start });
+                }
+            }
+            vector<int> sorted_graph = TopologicalSort(r, stepen);
+            if (sorted_graph.size() != 0) 
+            {
+                for (int vershina : sorted_graph) 
+                {
+                    cout << MapCS[vershina] << endl;
+                }
+            }
             break;
         }
         case 18:
@@ -631,3 +692,4 @@ int main()
     }
     return 0;
 }
+//https://www.guru99.com/topological-sort-algorithm.html
