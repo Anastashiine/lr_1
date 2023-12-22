@@ -48,3 +48,5 @@ public:
     }
 };
 int check_diameter();
+int check_id();
+string FName();

@@ -4,8 +4,8 @@ using namespace std;
 int check_diameter()
 {
 	int d;
-	unordered_set<int> diameter = { 500, 700, 1000, 1400 };
-	while ((cin >> d).fail() || !(diameter.contains(d))) 
+	const int diameters[] = { 500, 700, 1000, 1400 };
+	while ((cin >> d).fail() || find(begin(diameters), end(diameters), d) == end(diameters))
 	{
 		cin.clear();
 		cin.ignore(10000, '\n');
@@ -13,4 +13,23 @@ int check_diameter()
 	}
 	cerr << d << endl;
 	return d;
+}
+int check_id()
+{
+	int id;
+	while ((cin >> id).fail())
+	{
+		cin.clear();
+		cin.ignore(10000, '\n');
+		cout << "Enter an integer: ";
+	}
+	cerr << id << endl;
+	return id;
+}
+string FName()
+{
+	string fname;
+	cout << "Enter a file name: ";
+	GetLine(cin, fname);
+	return fname;
 }

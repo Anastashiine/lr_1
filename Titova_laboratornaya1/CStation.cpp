@@ -1,7 +1,17 @@
 #include "CStation.h"
 #include "utils.h"
 using namespace std;
+
 int CStation::MaxID = 0;
+void CStation::ResetMaxID()
+{
+    MaxID = 0;
+}
+
+void CStation::SetMaxID() const
+{
+    MaxID = id;
+}
 CStation::CStation()
 {
     id = ++MaxID;
@@ -15,6 +25,60 @@ CStation::CStation()
 int CStation::GetCSID() const
 {
     return id;
+}
+void CStation:: start_wk()
+{
+    if (working < workshops) 
+    {
+        working++;
+    }
+}
+
+void CStation::stop_wk()
+{
+    if (working > 0) 
+    {
+        working--;
+    }
+}
+
+void CStation::increase_start()
+{
+    start++;
+}
+
+void CStation::increase_stop()
+{
+    stop++;
+}
+
+void CStation::dicrease_strat()
+{
+    start--;
+}
+
+void CStation::dicrease_stop()
+{
+    stop--;
+}
+int CStation::get_wk() const
+{
+    return workshops;
+}
+
+int CStation::get_working() const
+{
+    return working;
+}
+
+int CStation::get_start() const
+{
+    return start;
+}
+
+int CStation::get_stop() const
+{
+    return stop;
 }
 istream& operator >> (istream& in, CStation& station)
 {

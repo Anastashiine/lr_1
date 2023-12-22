@@ -130,12 +130,14 @@
   <ItemGroup>
     <ClCompile Include="CPipe.cpp" />
     <ClCompile Include="CStation.cpp" />
+    <ClCompile Include="network.cpp" />
     <ClCompile Include="Titova_laboratornaya1.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPipe.h" />
     <ClInclude Include="CStation.h" />
+    <ClInclude Include="network.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

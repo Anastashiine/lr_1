@@ -5,16 +5,25 @@
 class CPipe
 {
     int id;
-public:
     static int MaxID;
-    std::string name;
     double length;
     int diametr;
+    int CS_entrance;
+    int CS_exit;
+public:
+    std::string name;
     bool repair;
     CPipe();
     int GetPipeID() const;
-    int CS_entrance;
-    int CS_exit;
+    static void ResetMaxID();
+    void SetMaxID() const;
+    static CPipe AddPipe(int d = 0);
+    void add_cs_entrance(int id = -1);
+    void add_cs_exit(int id = -1);
+    int get_diameter() const;
+    double get_length() const;
+    int add_pipe_entrance() const;
+    int add_pipe_exit() const;
 
 friend std::ostream& operator << (std::ostream& out, const CPipe& p);
 friend std::istream& operator >> (std::istream& in, CPipe& p);

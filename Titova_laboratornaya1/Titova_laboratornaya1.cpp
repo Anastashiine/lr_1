@@ -7,6 +7,7 @@
 #include "utils.h"
 #include <unordered_set>
 #include <queue>
+#include "network.h"
 using namespace std;
 
 void PrintMenu()
@@ -49,13 +50,7 @@ bool CheckID(const unordered_map<int, type>& x, const int& id)
 {
     return (x.find(id) != x.end());
 }
-string FName() 
-{
-    string fname;
-    cout << "Enter a file name: ";
-    GetLine(cin, fname);
-    return fname;
-}
+
 void SavePipe(ofstream& fout, const CPipe& p)
 {
     if (p.name != "")
@@ -84,7 +79,7 @@ CStation LoadCS(ifstream& fin)
 }
 void EditPipe(unordered_map<int, CPipe>& MapPipe, const int& id)
 {
-    if (MapPipe[id].CS_entrance == -1)
+    if (MapPipe[id].add_pipe_entrance() == -1)
     {
         MapPipe[id].repair = !(MapPipe[id].repair);
     }
@@ -100,18 +95,18 @@ void EditCS(unordered_map<int, CStation>& MapCS)
     id = check_cond(MapCS.size());
     if (CheckID(MapCS, id))
     {
-        if (MapCS[id].start == 0 && MapCS[id].stop == 0)
+        if (MapCS[id].get_start() == 0 && MapCS[id].get_stop() == 0)
         {
             string solution;
             cout << "Please, enter 'start' if you want to add a working workshop and 'stop' if you want to stop a working workshop: ";
             cin >> solution;
-            if (solution == "start" && check_cond(MapCS[id].workshops))
+            if (solution == "start")
             {
-                MapCS[id].working++;
+                MapCS[id].start_wk();
             }
-            if (solution == "stop" && check_cond(MapCS[id].working))
+            if (solution == "stop")
             {
-                MapCS[id].working--;
+                MapCS[id].stop_wk();
             }
             cerr << solution << endl;
         }
@@ -127,7 +122,7 @@ void EditCS(unordered_map<int, CStation>& MapCS)
 }
 void DeletePipe(unordered_map<int, CPipe>& MapPipe, const int& id)
 {
-    if (MapPipe[id].CS_entrance == -1)
+    if (MapPipe[id].add_pipe_entrance() == -1)
     {
         MapPipe.erase(id);
     }
@@ -143,7 +138,7 @@ void DeleteCS(unordered_map<int, CStation>& MapCS)
     id = check_cond(MapCS.size());
     if (CheckID(MapCS, id))
     {
-        if (MapCS[id].start == 0 && MapCS[id].stop == 0)
+        if (MapCS[id].get_start() == 0 && MapCS[id].get_stop() == 0)
         {
             MapCS.erase(id);
         }
@@ -192,7 +187,7 @@ bool CheckByName(const CStation& MapCS, string param)
 }
 bool CheckByUnworkingWorkshops(const CStation& MapCS, double param) 
 {
-    param = ((MapCS.workshops - MapCS.working) * 100) / MapCS.workshops;
+    param = ((MapCS.get_wk() - MapCS.get_working()) * 100) / MapCS.get_wk();
     return param;
 }
 template <typename type>
@@ -275,88 +270,6 @@ unordered_map<int, CStation>& ClearCS(unordered_map<int, CStation>& CStation)
     return CStation;
 }
 
-int Get_PipeID(unordered_map<int, CPipe>& MapPipe)
-{
-    int d;
-    int pID = 0;
-    cout << "Enter a diameter of the pipe: ";
-    d = check_diameter();
-    for (auto& [id, p]: MapPipe)
-    {
-        if (d == p.diametr && p.repair == false && p.CS_entrance == -1) 
-        {
-            pID = p.GetPipeID();
-            break;
-        }
-    }
-    if (!pID) 
-    {
-        cout << "Pipe not found. You can create a new one:" << endl;
-        CPipe p;
-        cout << "Please, enter the name of the pipe: ";
-        GetLine(cin, p.name);
-        cout << "Please, enter pipe length: ";
-        p.length = check_cond(1000);
-        p.diametr = d;
-        p.repair = false;
-        MapPipe.insert({ p.GetPipeID(), p});
-        pID = p.GetPipeID();
-    }
-    return pID;
-}
-
-int GetCSID_Entrance(unordered_map<int, CStation>& MapCS)
-{
-    int entrance;
-    cout << "Enter a CS ID of the entrance: ";
-    entrance = check_cond(MapCS.size());
-    return entrance;
-}
-
-int GetCSID_Exit(unordered_map<int, CStation>& MapCS)
-{
-    int exit;
-    cout << "Enter a CS ID of the exit: ";
-    exit = check_cond(MapCS.size());
-    return exit;
-}
-vector<int> TopologicalSort(vector<vector<int>>& r, unordered_map<int, int>& stepen) 
-{
-    int vershiny = stepen.size();
-    vector<int> result;
-    queue<int> q;
-    for (auto& [id, st] : stepen) 
-    {
-        if (st == 0)
-        {
-            q.push(id);
-        }
-    }
-    while (!q.empty()) 
-    {
-        int vershina = q.front();
-        q.pop();
-        result.insert(result.begin(), vershina);
-        for (auto& pair : r)
-        {
-            if (pair[1] == vershina)
-            {
-                stepen[pair[0]]--;
-                if (stepen[pair[0]] == 0) 
-                {
-                    q.push(pair[0]);
-                }
-            }
-        }
-    }
-    if (result.size() != vershiny) 
-    {
-        cout << "Can't do topological sort. Network has a cycle" << endl;
-        result.resize(0);
-    }
-    return result;
-}
-
 int main()
 {
     redirect_output_wrapper cerr_out(cerr);
@@ -365,6 +278,7 @@ int main()
         cerr_out.redirect(logfile);
     unordered_map <int, CPipe> MapPipe;
     unordered_map <int, CStation> MapCS;
+    network net;
     while (1)
     {
         PrintMenu();
@@ -404,7 +318,7 @@ int main()
         {
             cout << "Enter ID of the pipes for editing: " << endl;
             int id;
-            id = check_cond(CPipe::MaxID);
+            id = check_id();
             if (CheckID(MapPipe, id))
             {
                 EditPipe(MapPipe, id);
@@ -457,7 +371,7 @@ int main()
                 {
                     CPipe p = LoadPipe(fin);
                     MapPipe.insert({p.GetPipeID(), p});
-                    p.MaxID = p.GetPipeID();
+                    p.SetMaxID();
 
                 }
                 int count_s;
@@ -466,7 +380,7 @@ int main()
                 {
                     CStation station = LoadCS(fin);
                     MapCS.insert({station.GetCSID(), station});
-                    station.MaxID = station.GetCSID();
+                    station.SetMaxID();
                 }
                 fin.close();
             }
@@ -497,7 +411,7 @@ int main()
         {
             cout << "Please, enter a pipe's ID for deleting: ";
             int id;
-            id = check_cond(CPipe::MaxID);
+            id = check_id();
             if (CheckID(MapPipe, id))
             {
                 DeletePipe(MapPipe, id);
@@ -525,7 +439,7 @@ int main()
                     {
                         cout << "Input ID of pipe or enter '0' to exit: ";
                         int id;
-                        id = check_cond(CPipe::MaxID, 0);
+                        id = check_id();
                         if (id)
                         {
                             if (CheckID(MapPipe, id))
@@ -606,30 +520,32 @@ int main()
         }
         case 15:
         {
-            int pID = Get_PipeID(MapPipe);
-            int entrance = GetCSID_Entrance(MapCS);
-            int exit = GetCSID_Exit(MapCS);
-            if (CheckID(MapCS, entrance) && CheckID(MapCS, exit) && entrance != exit && MapCS[entrance].working < MapCS[entrance].workshops && MapCS[exit].working < MapCS[exit].workshops)
+            int pID = net.Get_PipeID(MapPipe);
+            cout << "Enter CS ID of the entrance: ";
+            int entrance = check_id();
+            cout << "Enter CS ID of the exit: ";
+            int exit = check_id();
+            if (CheckID(MapCS, entrance) && CheckID(MapCS, exit) && entrance != exit)
             {
-                MapCS[entrance].working++;
-                MapCS[exit].working++;
-                MapCS[entrance].start++;
-                MapCS[exit].stop++;
-                MapPipe[pID].CS_entrance = entrance;
-                MapPipe[pID].CS_exit = exit;
+                MapCS[entrance].start_wk();
+                MapCS[exit].start_wk();
+                MapCS[entrance].increase_start();
+                MapCS[exit].increase_stop();
+                MapPipe[pID].add_cs_entrance(entrance);
+                MapPipe[pID].add_cs_exit(exit);
             }
             break;
         }
         case 16:
         {
             cout << "Enter a pipeline's ID for diconnection: ";
-            int pID = check_cond(CPipe::MaxID, 0);
-            if (CheckID(MapPipe, pID) && MapPipe[pID].CS_entrance != -1)
+            int pID = check_id();
+            if (CheckID(MapPipe, pID) && MapPipe[pID].add_pipe_entrance() != -1)
             {
-                MapCS[MapPipe[pID].CS_entrance].start--;
-                MapCS[MapPipe[pID].CS_exit].stop--;
-                MapPipe[pID].CS_entrance = -1;
-                MapPipe[pID].CS_exit = -1;
+                MapCS[MapPipe[pID].add_pipe_entrance()].dicrease_strat();
+                MapCS[MapPipe[pID].add_pipe_exit()].dicrease_stop();
+                MapPipe[pID].add_cs_entrance();
+                MapPipe[pID].add_cs_exit();
             }
             break;
         }
@@ -638,20 +554,20 @@ int main()
             vector <vector<int>> r;
             for (auto& [id, p] : MapPipe) 
             {
-                if (p.CS_entrance != -1) 
+                if (p.add_pipe_entrance() != -1) 
                 {
-                    r.push_back({ p.CS_entrance, p.CS_exit });
+                    r.push_back({ p.add_pipe_entrance(), p.add_pipe_exit()});
                 }
             }
             unordered_map<int, int> stepen;
             for (auto& [id, station] : MapCS) 
             {
-                if (station.start > 0 || station.stop > 0) 
+                if (station.get_start() > 0 || station.get_stop() > 0)
                 {
-                    stepen.insert({id, station.start });
+                    stepen.insert({id, station.get_start()});
                 }
             }
-            vector<int> sorted_graph = TopologicalSort(r, stepen);
+            vector<int> sorted_graph = net.TopologicalSort(r, stepen);
             if (sorted_graph.size() != 0) 
             {
                 for (int vershina : sorted_graph) 
@@ -665,14 +581,14 @@ int main()
         {
             for (auto& [id, p]: MapPipe)
             {
-                if (p.CS_entrance != -1)
+                if (p.add_pipe_entrance() != -1)
                 {
                     cout << p << endl;
                 }
             }
             for (auto& [id, station] : MapCS)
             {
-                if (station.start > 0 || station.stop > 0)
+                if (station.get_start() > 0 || station.get_stop() > 0)
                 {
                     cout << station << endl;
                 }

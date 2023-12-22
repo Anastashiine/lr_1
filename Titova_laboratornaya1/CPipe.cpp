@@ -3,6 +3,15 @@
 using namespace std;
 
 int CPipe::MaxID = 0;
+void CPipe::ResetMaxID()
+{
+    MaxID = 0;
+}
+
+void CPipe::SetMaxID() const
+{
+    MaxID = id;
+}
 CPipe::CPipe()
 {
     id = ++MaxID;
@@ -17,6 +26,52 @@ int CPipe::GetPipeID() const
 {
     return id;
 }
+CPipe CPipe::AddPipe(int d)
+{
+    CPipe p;
+    cout << "Type a pipeline name: ";
+    GetLine(cin, p.name);
+    cout << "Enter a length: ";
+    p.length = check_cond(1000);
+    if (d > 0)
+        p.diametr = d;
+    else
+    {
+        cout << "Enter a d: ";
+        p.diametr = check_diameter();
+    }
+    p.repair = false;
+    return p;
+}
+void CPipe:: add_cs_entrance(int id)
+{
+    CS_entrance = id;
+}
+
+void CPipe::add_cs_exit(int id)
+{
+    CS_exit = id;
+}
+int CPipe::get_diameter() const
+{
+    return diametr;
+}
+
+double CPipe::get_length() const
+{
+    return length;
+}
+
+int CPipe::add_pipe_entrance() const
+{
+    return CS_entrance;
+}
+
+int CPipe::add_pipe_exit() const
+{
+    return CS_exit;
+}
+
 istream& operator >> (istream& in, CPipe& p)
 {
     cout << "Please, enter the name of the pipe: ";
