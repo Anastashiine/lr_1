@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #define GetLine(in, st) getline(in>>std::ws, st); cout << st << endl;
 #define LoadLine(in, st) getline(in>>std::ws, st); 
 template <typename T>
@@ -47,6 +48,11 @@ public:
         stream.rdbuf(dest.rdbuf());
     }
 };
+template <typename T>
+bool CheckID(std::unordered_map<int, T> m, int id)
+{
+    return m.contains(id);
+}
 int check_diameter();
 int check_id();
-string FName();
+std::string FName();

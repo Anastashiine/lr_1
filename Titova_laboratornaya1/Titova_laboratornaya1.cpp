@@ -44,114 +44,6 @@ int checkmenu()
     }
     return i;
 }
-
-template <typename type>
-bool CheckID(const unordered_map<int, type>& x, const int& id) 
-{
-    return (x.find(id) != x.end());
-}
-
-void SavePipe(ofstream& fout, const CPipe& p)
-{
-    if (p.name != "")
-    {
-        fout << p;
-    }
-}
-void SaveCS(ofstream& fout, const CStation& station)
-{
-    if (station.name != "")
-    {
-        fout << station;
-    }
-}
-CPipe LoadPipe(ifstream& fin)
-{
-    CPipe p;
-    fin >> p;
-    return p;
-}
-CStation LoadCS(ifstream& fin)
-{
-    CStation station;
-    fin >> station;
-    return station;
-}
-void EditPipe(unordered_map<int, CPipe>& MapPipe, const int& id)
-{
-    if (MapPipe[id].add_pipe_entrance() == -1)
-    {
-        MapPipe[id].repair = !(MapPipe[id].repair);
-    }
-    else
-    {
-        cout << "This pipe is in the network, you can't use it" << endl;
-    }
-}
-void EditCS(unordered_map<int, CStation>& MapCS)
-{
-    cout << "Please, enter a station's ID for editing: ";
-    int id;
-    id = check_cond(MapCS.size());
-    if (CheckID(MapCS, id))
-    {
-        if (MapCS[id].get_start() == 0 && MapCS[id].get_stop() == 0)
-        {
-            string solution;
-            cout << "Please, enter 'start' if you want to add a working workshop and 'stop' if you want to stop a working workshop: ";
-            cin >> solution;
-            if (solution == "start")
-            {
-                MapCS[id].start_wk();
-            }
-            if (solution == "stop")
-            {
-                MapCS[id].stop_wk();
-            }
-            cerr << solution << endl;
-        }
-        else
-        {
-            cout << "This CS is in the network, you can't use it";
-        }
-    }
-    else
-    {
-        cout << "Station with such ID was not found" << endl;
-    }
-}
-void DeletePipe(unordered_map<int, CPipe>& MapPipe, const int& id)
-{
-    if (MapPipe[id].add_pipe_entrance() == -1)
-    {
-        MapPipe.erase(id);
-    }
-    else
-    {
-        cout << "This pipe is in the network, you can't use it" << endl;
-    }
-}
-void DeleteCS(unordered_map<int, CStation>& MapCS)
-{
-    cout << "Please, enter a station's ID for deleting: ";
-    int id;
-    id = check_cond(MapCS.size());
-    if (CheckID(MapCS, id))
-    {
-        if (MapCS[id].get_start() == 0 && MapCS[id].get_stop() == 0)
-        {
-            MapCS.erase(id);
-        }
-        else
-        {
-            cout << "This CS is in the network, you can't use it";
-        }
-    }
-    else
-    {
-        cout << "Station with such ID was not found";
-    }
-}
 template <typename type>
 using PipeFilter = bool(*)(const CPipe& MapPipe, type param);
 bool CheckByName(const CPipe& MapPipe, string param) 
@@ -207,16 +99,32 @@ unordered_set<int> FindCSByFilter(const unordered_map<int, CStation>& MapCS, CSF
     }
     return res;
 }
+void FindAllStationsByName(network& net)
+{
+    string name;
+    cout << "Enter station name for searching: ";
+    GetLine(cin, name);
+    for (int id : FindCSByFilter(net.Get_CS(), CheckByName, name))
+    {
+        cout << net.Get_CS()[id];
+    }
+}
+
+void FindAllStationsByBusyWorkshops(network& net)
+{
+    cout << "Enter percent of unworking stations for searching: ";
+    double percent = check_cond(100);
+    for (int id : FindCSByFilter(net.Get_CS(), CheckByUnworkingWorkshops, percent))
+    {
+        cout << net.Get_CS()[id];
+    }
+}
 void PackMenu()
 {
     cout << "1. Find pipes by name" << endl;
     cout << "2. Find pipes by repair" << endl;
 }
-void PrintFoundPipes(const int& id, unordered_map<int, CPipe>& MapPipe)
-{
-    cout << MapPipe[id];
-}
-unordered_set<int> PackEdit(unordered_map<int, CPipe>& MapPipe)
+unordered_set<int> PackEdit(network& net)
 {
     unordered_set<int> PID{};
     PackMenu();
@@ -227,9 +135,9 @@ unordered_set<int> PackEdit(unordered_map<int, CPipe>& MapPipe)
         string name;
         cout << "Input pipe name for searching: ";
         GetLine(cin, name);
-        for (int id : FindPipesByFilter(MapPipe, CheckByName, name))
+        for (int id : FindPipesByFilter(net.Get_Pipe(), CheckByName, name))
         {
-            PrintFoundPipes(id, MapPipe);
+            cout << net.Get_Pipe()[id];
             PID.insert(id);
         }
         break;
@@ -239,13 +147,40 @@ unordered_set<int> PackEdit(unordered_map<int, CPipe>& MapPipe)
         bool flag;
         cout << "Input pipe in repair or not: ";
         flag = check_bool(0, 1);
-        for (int id : FindPipesByFilter(MapPipe, CheckByRepair, flag))
+        for (int id : FindPipesByFilter(net.Get_Pipe(), CheckByRepair, flag))
         {
-            PrintFoundPipes(id, MapPipe);
+            cout << net.Get_Pipe()[id];
             PID.insert(id);
         }
         break;
     }
+    }
+    return PID;
+}
+unordered_set<int> SelectPipesID(network& net)
+{
+    unordered_set<int> PID{};
+    while (1)
+    {
+        cout << "Input ID of pipeline or 0 to complete: ";
+        int id;
+        id = check_id();
+        if (id)
+        {
+            if (CheckID(net.Get_Pipe(), id))
+            {
+                cout << net.Get_Pipe()[id];
+                PID.insert(id);
+            }
+            else
+            {
+                cout << "No pipeline with such ID" << endl;
+            }
+        }
+        else
+        {
+            break;
+        }
     }
     return PID;
 }
@@ -259,25 +194,12 @@ void EditMenu()
         << "0. Return to main menu" << endl;
 }
 
-unordered_map<int, CPipe>& ClearP(unordered_map<int, CPipe>& MapPipe)
-{
-    MapPipe.clear();
-    return MapPipe;
-}
-unordered_map<int, CStation>& ClearCS(unordered_map<int, CStation>& CStation)
-{
-    CStation.clear();
-    return CStation;
-}
-
 int main()
 {
     redirect_output_wrapper cerr_out(cerr);
     ofstream logfile("log.txt");
     if (logfile)
         cerr_out.redirect(logfile);
-    unordered_map <int, CPipe> MapPipe;
-    unordered_map <int, CStation> MapCS;
     network net;
     while (1)
     {
@@ -288,105 +210,42 @@ int main()
         {
             CPipe p;
             cin >> p;
-            MapPipe.insert({ p.GetPipeID(), p });
-            cout << p;
+            net.Add_Pipe(p);
             break;
         }
         case 2:
         {
             CStation station;
             cin >> station;
-            MapCS.insert({ station.GetCSID(), station });
-            cout << station;
+            net.Add_CS(station);
             break;
         }
         case 3:
         {
-            cout << "Pipes information: " << endl;
-            for (auto& i: MapPipe)
-            {
-                cout << i.second << endl;
-            }
-            cout << "Compressor stations information: " << endl;
-            for (auto& i : MapCS)
-            {
-                cout << i.second << endl;
-            }
+            net.view_all_objects();
             break;
         }
         case 4:
         {
-            cout << "Enter ID of the pipes for editing: " << endl;
-            int id;
-            id = check_id();
-            if (CheckID(MapPipe, id))
-            {
-                EditPipe(MapPipe, id);
-            }
-            else
-            {
-                cout << "Pipe with such ID was not found";
-            }
+            net.EditPipe(0);
             break;
         }
         case 5:
         {
-            EditCS(MapCS);
+            net.EditCS();
             break;
         }
         case 6:
         {
-            ofstream fout;
-            string  fname;
-            cout << "Enter a file name: ";
-            GetLine(cin, fname);
-            fout.open(fname, ios::out);
-            if (fout.is_open()) 
-            {
-                fout << MapPipe.size() << endl;
-                for (auto& i : MapPipe) 
-                {
-                    SavePipe(fout, i.second);
-                }
-                fout << MapCS.size() << endl;
-                for (auto& i : MapCS) 
-                {
-                    SaveCS(fout, i.second);
-                }
-                fout.close();
-            }
+            net.Save_Data();
             break;
         }
         case 7:
         {
-            ifstream fin;
-            fin.open(FName(), ios::in);
-            if (fin.is_open()) 
-            {
-                MapPipe = ClearP(MapPipe);
-                MapCS = ClearCS(MapCS);
-                int count_p;
-                fin >> count_p;
-                while (count_p--) 
-                {
-                    CPipe p = LoadPipe(fin);
-                    MapPipe.insert({p.GetPipeID(), p});
-                    p.SetMaxID();
-
-                }
-                int count_s;
-                fin >> count_s;
-                while (count_s--) 
-                {
-                    CStation station = LoadCS(fin);
-                    MapCS.insert({station.GetCSID(), station});
-                    station.SetMaxID();
-                }
-                fin.close();
-            }
+            net.Load_Data();
             break;
         }
-        case 8:
+        /*case 8:
         {
             string name;
             cout << "Input name of the pipe: ";
@@ -406,25 +265,15 @@ int main()
                 cout << MapPipe[id];
             }
             break;
-        }
+        }*/
         case 10:
         {
-            cout << "Please, enter a pipe's ID for deleting: ";
-            int id;
-            id = check_id();
-            if (CheckID(MapPipe, id))
-            {
-                DeletePipe(MapPipe, id);
-            }
-            else
-            {
-                cout << "Pipe with such ID was not found";
-            }
+            net.DeletePipe(0);
             break;
         }
         case 11:
         {
-            unordered_set<int> PID = PackEdit(MapPipe);
+            unordered_set<int> PID = PackEdit(net);
             bool flag = true;
             while (flag)
             {
@@ -433,37 +282,14 @@ int main()
                 {
                 case 1:
                 {
-                    PID.clear();
-                    bool flag = true;
-                    while (flag)
-                    {
-                        cout << "Input ID of pipe or enter '0' to exit: ";
-                        int id;
-                        id = check_id();
-                        if (id)
-                        {
-                            if (CheckID(MapPipe, id))
-                            {
-                                PrintFoundPipes(id, MapPipe);
-                                PID.insert(id);
-                            }
-                            else
-                            {
-                                cout << "No pipe with such ID" << endl;
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
+                    PID = SelectPipesID(net);
                     break;
                 }
                 case 2:
                 {
                     for (const int& id : PID)
                     {
-                        EditPipe(MapPipe, id);
+                        net.EditPipe(id);
                     }
                     break;
                 }
@@ -471,15 +297,15 @@ int main()
                 {
                     for (const int& id : PID)
                     {
-                        DeletePipe(MapPipe, id);
+                        net.DeletePipe(id);
                     }
                     break;
                 }
                 case 4:
                 {
-                    for (auto& i : MapPipe)
+                    for (auto& [id, p] : net.Get_Pipe())
                     {
-                        cout << i.second << endl;
+                        cout << p << endl;
                     }
                     break;
                 }
@@ -494,105 +320,37 @@ int main()
         }
         case 12:
         {
-            string name;
-            cout << "Input name of the station: ";
-            GetLine(cin, name);
-            for (int id: FindCSByFilter(MapCS, CheckByName, name))
-            {
-                cout << MapCS[id];
-            }
+            FindAllStationsByName(net);
             break;
         }
         case 13:
         {
-            cout << "Input percent of unworking stations: ";
-            double per = check_cond(100.0);
-            for (int id: FindCSByFilter(MapCS, CheckByUnworkingWorkshops, per))
-            {
-                cout << MapCS[id];
-            }
+            FindAllStationsByBusyWorkshops(net);
             break;
         }
         case 14:
         {
-            DeleteCS(MapCS);
+            net.DeleteCS();
             break;
         }
         case 15:
         {
-            int pID = net.Get_PipeID(MapPipe);
-            cout << "Enter CS ID of the entrance: ";
-            int entrance = check_id();
-            cout << "Enter CS ID of the exit: ";
-            int exit = check_id();
-            if (CheckID(MapCS, entrance) && CheckID(MapCS, exit) && entrance != exit)
-            {
-                MapCS[entrance].start_wk();
-                MapCS[exit].start_wk();
-                MapCS[entrance].increase_start();
-                MapCS[exit].increase_stop();
-                MapPipe[pID].add_cs_entrance(entrance);
-                MapPipe[pID].add_cs_exit(exit);
-            }
+            net.Connect();
             break;
         }
         case 16:
         {
-            cout << "Enter a pipeline's ID for diconnection: ";
-            int pID = check_id();
-            if (CheckID(MapPipe, pID) && MapPipe[pID].add_pipe_entrance() != -1)
-            {
-                MapCS[MapPipe[pID].add_pipe_entrance()].dicrease_strat();
-                MapCS[MapPipe[pID].add_pipe_exit()].dicrease_stop();
-                MapPipe[pID].add_cs_entrance();
-                MapPipe[pID].add_cs_exit();
-            }
+            net.Disconnect();
             break;
         }
         case 17:
         {
-            vector <vector<int>> r;
-            for (auto& [id, p] : MapPipe) 
-            {
-                if (p.add_pipe_entrance() != -1) 
-                {
-                    r.push_back({ p.add_pipe_entrance(), p.add_pipe_exit()});
-                }
-            }
-            unordered_map<int, int> stepen;
-            for (auto& [id, station] : MapCS) 
-            {
-                if (station.get_start() > 0 || station.get_stop() > 0)
-                {
-                    stepen.insert({id, station.get_start()});
-                }
-            }
-            vector<int> sorted_graph = net.TopologicalSort(r, stepen);
-            if (sorted_graph.size() != 0) 
-            {
-                for (int vershina : sorted_graph) 
-                {
-                    cout << MapCS[vershina] << endl;
-                }
-            }
+            net.TopologicalSort();
             break;
         }
         case 18:
         {
-            for (auto& [id, p]: MapPipe)
-            {
-                if (p.add_pipe_entrance() != -1)
-                {
-                    cout << p << endl;
-                }
-            }
-            for (auto& [id, station] : MapCS)
-            {
-                if (station.get_start() > 0 || station.get_stop() > 0)
-                {
-                    cout << station << endl;
-                }
-            }
+            net.View_network();
             break;
         }
         case 0:
